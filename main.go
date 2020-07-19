@@ -38,11 +38,9 @@ type GroupMembers struct {
 type ContactInfo struct {
 	GroupID        string
 	GroupName      string
+	ContactPersons []string
 	Namespace      string
 	Cluster        string
-	ContactPersons []string
-	SolverGroup    string
-	Application    string
 }
 
 func main() {
