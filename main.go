@@ -36,6 +36,16 @@ type GroupMembers struct {
 }
 
 type ContactInfo struct {
+	Person    string
+	GroupID   string
+	GroupName string
+	Namespace string
+	Cluster   string
+}
+
+type ListnerContactInfo struct {
+	HostName       string
+	ListnerName    string
 	GroupID        string
 	GroupName      string
 	ContactPersons []string
@@ -59,17 +69,33 @@ func main() {
 	GetGroupMembers(gtoken, gid)
 
 	// run the GetListnerInfo function to create ListnerInfo output object
-	listners, err := GetListnerInfo(CreateClientSet())
+	contacts, err := GetContactInfo(CreateClientSet())
 	if err != nil {
 		log.Printf("Error: %v", err)
 	}
 
-	for _, l := range listners {
-		fmt.Printf("%v,%v,%v,%v,%v,%v,%v\n", l.HostName,
-			l.Name, l.Namespace, l.Application,
-			l.OpsTeam, l.Department, l.Cluster)
+	fmt.Println(contacts)
+
+}
+
+func GetContactInfo(clientset *kubernetes.Clientset) ([]ContactInfo, error) {
+	// initiate ContactInfo output objects
+	var contact ContactInfo
+	var contacts []ContactInfo
+
+	ns, err := clientset.CoreV1().Namespaces().List(v1.ListOptions{})
+	if err != nil {
+		return nil, err
 	}
 
+	// TEST
+	fmt.Println(contact)
+	for _, n := range ns.Items {
+		fmt.Println(n.GetName())
+	}
+	//
+
+	return contacts, err
 }
 
 func CreateClientSet() *kubernetes.Clientset {
