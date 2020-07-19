@@ -2,4 +2,8 @@ module github.com/bartvanbenthem/aks2contact
 
 go 1.13
 
-require github.com/bartvanbenthem/azuretoken v0.0.0-20200718182747-e9b01f4b7dc0
+require (
+	github.com/bartvanbenthem/azuretoken v0.0.0-20200718191756-87249661268a
+	k8s.io/apimachinery v0.16.7
+	k8s.io/client-go v0.16.7
+)
