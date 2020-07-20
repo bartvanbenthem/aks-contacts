@@ -62,6 +62,7 @@ export ROLEBINDING='<<name-of-rolebinding-to-export>>'
 
 ## run binary
 ``` shell
+git clone https://github.com/bartvanbenthem/aks2contact.git
 chmod 755 bin/aks2contact
 ./bin/aks2contact
 ```
