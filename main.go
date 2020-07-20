@@ -96,6 +96,7 @@ func main() {
 	graphClient := azuretoken.GraphClient{TenantID: tenantid, ApplicationID: applicationid, ClientSecret: secret}
 	gtoken := token.GetGraphToken(graphClient)
 
+	// Create the contact output
 	contacts, err := GetAllContacts(gtoken)
 	if err != nil {
 		log.Printf("Error: %v\n", err)
@@ -112,7 +113,12 @@ func main() {
 }
 
 func CheckEmptyEnVar() {
-	vars := []string{"AZAPPLICATIONID", "AZTENANT", "AZSECRET", "KUBECONFIG", "ROLEBINDING"}
+	vars := []string{"AZAPPLICATIONID",
+		"AZTENANT",
+		"AZSECRET",
+		"KUBECONFIG",
+		"ROLEBINDING"}
+
 	for _, v := range vars {
 		if os.Getenv(v) == "" {
 			log.Fatalf("Fatal Error: env variable [ %v ] is empty\n", v)
