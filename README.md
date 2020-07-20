@@ -2,7 +2,7 @@
 display all the contacts per namespace or listner on an RBAC enabled Azure Kubernetes cluster.
 
 
-# create azure spn
+## create azure spn
 
 #### set variables for creating app registration
 ``` shell
@@ -11,7 +11,7 @@ tenantId=$(az account show --query tenantId -o tsv)
 subscriptions=('<subscription-id>')
 ```
     
-### Create the Azure AD application
+#### Create the Azure AD application
 ``` shell
 applicationId=$(az ad app create \
     --display-name "$spname" \
@@ -19,13 +19,17 @@ applicationId=$(az ad app create \
     --query appId -o tsv)
 ```
 
-### Update the application group memebership claims
-`az ad app update --id $applicationId --set groupMembershipClaims=All`
+#### Update the application group memebership claims
+``` shell
+az ad app update --id $applicationId --set groupMembershipClaims=All
+```
 
-### Create a service principal for the Azure AD application
-`az ad sp create --id $applicationId`
+#### Create a service principal for the Azure AD application
+``` shell
+az ad sp create --id $applicationId
+```
 
-### Get the service principal secret
+#### Get the service principal secret
 ``` shell
 applicationSecret=$(az ad sp credential reset \
     --name $applicationId \
@@ -33,20 +37,20 @@ applicationSecret=$(az ad sp credential reset \
     --query password -o tsv)
 ```
 
-### sleep
+#### sleep
 ``` shell
 echo "waiting for app to be ready for the role assignments"`
 sleep 10
 ```
 
-### Add SPN to the subscriptions as an reader
+#### Add SPN to the subscriptions as an reader
 ``` shell
 for s in "${subscriptions[@]}"; do {
     az role assignment create --assignee $applicationId --subscription $s --role 'Reader'
 }; done
 ```
 
-# set env vars
+## set env vars
 Once the Azure App registration is created set the following environment variables:
 ``` shell
 export AZAPPLICATIONID='<spn-id>'
