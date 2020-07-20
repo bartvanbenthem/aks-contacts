@@ -4,7 +4,7 @@ display all the contacts per namespace or listner on an RBAC enabled Azure Kuber
 
 # create azure spn
 
-### set variables for creating app registration
+#### set variables for creating app registration
 ``` shell
 spname='<name-spn>'
 tenantId=$(az account show --query tenantId -o tsv)
