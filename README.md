@@ -37,12 +37,6 @@ $ applicationSecret=$(az ad sp credential reset \
     --query password -o tsv)
 ```
 
-#### sleep
-``` shell
-$ echo "waiting for app to be ready for the role assignments"`
-$ sleep 10
-```
-
 #### Add SPN to the subscriptions as an reader
 ``` shell
 for s in "${subscriptions[@]}"; do {
