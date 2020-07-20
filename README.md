@@ -5,9 +5,9 @@ display all the contacts per namespace or listner on an RBAC enabled Azure Kuber
 # create azure spn
 
 ### set variables for creating app registration
-spname='<name-spn>'
-tenantId=$(az account show --query tenantId -o tsv)
-subscriptions=('<subscription-id>')
+* spname='<name-spn>'
+* tenantId=$(az account show --query tenantId -o tsv)
+* subscriptions=('<subscription-id>')
 
 ### Create the Azure AD application
 applicationId=$(az ad app create \
@@ -40,8 +40,8 @@ for s in "${subscriptions[@]}"; do {
 # set env vars
 Once the Azure App registration is created set the following environment variables:
 
-export AZAPPLICATIONID='<spn-id>'
-export AZTENANT='<azure-tenant-id>'
-export AZSECRET='<spn-secret>'
-export KUBECONFIG='~/.kube/config'
-export ROLEBINDING='<name-of-rolebinding>'
+* export AZAPPLICATIONID='<spn-id>'
+* export AZTENANT='<azure-tenant-id>'
+* export AZSECRET='<spn-secret>'
+* export KUBECONFIG='~/.kube/config'
+* export ROLEBINDING='<name-of-rolebinding>'
