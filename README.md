@@ -33,7 +33,7 @@ az ad sp create --id $applicationId
 ``` shell
 applicationSecret=$(az ad sp credential reset \
     --name $applicationId \
-    --credential-description "golangpass" \
+    --credential-description "passwrd" \
     --query password -o tsv)
 ```
 
