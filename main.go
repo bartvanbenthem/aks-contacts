@@ -7,7 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/bartvanbenthem/azuretoken"
@@ -102,14 +104,14 @@ func main() {
 		log.Printf("Error: %v\n", err)
 	}
 
+	cluster := GetCurrentContext()
+	fmt.Printf("%-27v %-27v %-35v %v\n", "contact", "namespace", "group", "context")
 	for _, c := range contacts {
 		for _, p := range c.Persons {
 			gname := az.GetGroup(gtoken, c.Group.GroupID)
-			fmt.Printf("name: %-27v ns: %-27v group: %v\n", p, c.Group.Namespace, gname.DisplayName)
+			fmt.Printf("%-27v %-27v %-35v %v\n", p, c.Group.Namespace, gname.DisplayName, cluster)
 		}
-
 	}
-
 }
 
 func CheckEmptyEnVar() {
@@ -124,6 +126,16 @@ func CheckEmptyEnVar() {
 			log.Fatalf("Fatal Error: env variable [ %v ] is empty\n", v)
 		}
 	}
+}
+
+func GetCurrentContext() string {
+	cmd := exec.Command("kubectl", "config", "current-context")
+	stdoutStderr, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+	}
+
+	return strings.TrimSuffix(string(stdoutStderr), "\n")
 }
 
 func GetAllContacts(token azuretoken.GraphToken) ([]Contacts, error) {
