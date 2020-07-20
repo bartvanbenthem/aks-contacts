@@ -5,19 +5,19 @@ display all the contacts per namespace or listner on an RBAC enabled Azure Kuber
 # create azure spn
 
 ### set variables for creating app registration
-`
-* spname='<name-spn>'
-* tenantId=$(az account show --query tenantId -o tsv)
-* subscriptions=('<subscription-id>')
-`
+``` shell
+spname='<name-spn>'
+tenantId=$(az account show --query tenantId -o tsv)
+subscriptions=('<subscription-id>')
+```
     
 ### Create the Azure AD application
-`
+``` shell
 applicationId=$(az ad app create \
     --display-name "$spname" \
     --identifier-uris "https://$spname" \
     --query appId -o tsv)
-`
+```
 
 ### Update the application group memebership claims
 `az ad app update --id $applicationId --set groupMembershipClaims=All`
@@ -26,22 +26,25 @@ applicationId=$(az ad app create \
 `az ad sp create --id $applicationId`
 
 ### Get the service principal secret
-`
+``` shell
 applicationSecret=$(az ad sp credential reset \
     --name $applicationId \
     --credential-description "golangpass" \
     --query password -o tsv)
-`
+```
+
 ### sleep
-`echo "waiting for app to be ready for the role assignments"`
-`sleep 10`
+``` shell
+echo "waiting for app to be ready for the role assignments"`
+sleep 10
+```
 
 ### Add SPN to the subscriptions as an reader
-`
+``` shell
 for s in "${subscriptions[@]}"; do {
     az role assignment create --assignee $applicationId --subscription $s --role 'Reader'
 }; done
-`
+```
 
 # set env vars
 Once the Azure App registration is created set the following environment variables:
