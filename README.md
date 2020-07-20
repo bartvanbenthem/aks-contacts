@@ -56,7 +56,7 @@ Once the Azure App registration is created set the following environment variabl
 export AZAPPLICATIONID='$applicationId'
 export AZTENANT=$tenantId
 export AZSECRET='$applicationSecret'
-export KUBECONFIG='~/.kube/config'
+export KUBECONFIG='~/.kube/config' # give full path if ~ gives an error
 export ROLEBINDING='<<name-of-rolebinding-to-export>>'
 ```
 
