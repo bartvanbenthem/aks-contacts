@@ -45,7 +45,7 @@ for s in "${subscriptions[@]}"; do {
 
 # set env vars
 Once the Azure App registration is created set the following environment variables:
-```
+``` shell
 export AZAPPLICATIONID='<spn-id>'
 export AZTENANT='<azure-tenant-id>'
 export AZSECRET='<spn-secret>'
