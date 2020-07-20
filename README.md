@@ -6,9 +6,9 @@ display all the contacts per namespace or listner on an RBAC enabled Azure Kuber
 
 #### set variables for creating app registration
 ``` shell
-spname='<name-spn>'
+spname='<<name-spn>>'
 tenantId=$(az account show --query tenantId -o tsv)
-subscriptions=('<subscription-id>')
+subscriptions=('<<subscription-id-01 subscription-id-02 ...>>')
 ```
     
 #### Create the Azure AD application
