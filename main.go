@@ -35,25 +35,32 @@ type GroupMembers struct {
 	} `json:"value"`
 }
 
-type ContactInfo struct {
-	Person    string
+type Group struct {
 	GroupID   string
 	GroupName string
 	Namespace string
-	Cluster   string
+}
+
+type Contacts struct {
+	Persons []string
+	Group   Group
 }
 
 type ListnerContactInfo struct {
 	HostName       string
 	ListnerName    string
-	GroupID        string
-	GroupName      string
-	ContactPersons []string
-	Namespace      string
+	ContactPersons []Contacts
 	Cluster        string
 }
 
+type K8s struct{}
+type Azure struct{}
+
 func main() {
+
+	// initialize azure and kubernetes methods
+	var kube K8s
+	var az Azure
 
 	// load environment variables for Azure environment
 	applicationid := os.Getenv("AZAPPLICATIONID")
@@ -65,40 +72,49 @@ func main() {
 	graphClient := azuretoken.GraphClient{TenantID: tenantid, ApplicationID: applicationid, ClientSecret: secret}
 	gtoken := token.GetGraphToken(graphClient)
 
-	gid := "ef9ec40b-709f-49d7-93ba-48511b501a45" // azure adgroup id
-	GetGroupMembers(gtoken, gid)
-
 	// run the GetListnerInfo function to create ListnerInfo output object
-	contacts, err := GetContactInfo(CreateClientSet())
+	groups, err := kube.GetGroup(kube.CreateClientSet())
 	if err != nil {
-		log.Printf("Error: %v", err)
+		log.Printf("Error: %v\n", err)
 	}
 
-	fmt.Println(contacts)
+	for _, g := range groups {
+		az.GetGroupMembers(gtoken, g.GroupID)
+	}
 
 }
 
-func GetContactInfo(clientset *kubernetes.Clientset) ([]ContactInfo, error) {
-	// initiate ContactInfo output objects
-	var contact ContactInfo
-	var contacts []ContactInfo
+func (k K8s) GetGroup(clientset *kubernetes.Clientset) ([]Group, error) {
+	rbenv := os.Getenv("ROLEBINDING")
+	var groups []Group
 
 	ns, err := clientset.CoreV1().Namespaces().List(v1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	// TEST
-	fmt.Println(contact)
 	for _, n := range ns.Items {
-		fmt.Println(n.GetName())
-	}
-	//
+		rb, err := clientset.RbacV1().RoleBindings(n.GetName()).List(v1.ListOptions{})
+		if err != nil {
+			return nil, err
+		}
 
-	return contacts, err
+		for _, r := range rb.Items {
+			if r.GetName() == rbenv {
+				for _, sub := range r.Subjects {
+					if sub.APIGroup == "rbac.authorization.k8s.io" {
+						group := Group{GroupID: sub.Name, Namespace: sub.Namespace}
+						groups = append(groups, group)
+					}
+				}
+			}
+		}
+
+	}
+	return groups, err
 }
 
-func CreateClientSet() *kubernetes.Clientset {
+func (K8s) CreateClientSet() *kubernetes.Clientset {
 	// When running the binary inside of a pod in a cluster,
 	// the kubelet will automatically mount a service account into the container at:
 	// /var/run/secrets/kubernetes.io/serviceaccount.
@@ -120,19 +136,19 @@ func CreateClientSet() *kubernetes.Clientset {
 	// creates the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		log.Printf("Error: %v", err)
+		log.Printf("Error: %v\n", err)
 	}
 
 	return clientset
 }
 
-func GetGroup() {}
+func (a Azure) GetGroup() {}
 
-func GetGroupMembers(graphToken azuretoken.GraphToken, gid string) {
+func (a Azure) GetGroupMembers(graphToken azuretoken.GraphToken, gid string) {
 	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/groups/%v/members", gid)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Printf("Error: %v", err)
+		log.Printf("Error: %v\n", err)
 	}
 
 	req.Header.Add("Authorization", fmt.Sprintf("%s %s", graphToken.TokenType, graphToken.AccessToken))
@@ -140,12 +156,12 @@ func GetGroupMembers(graphToken azuretoken.GraphToken, gid string) {
 	httpClient := &http.Client{Timeout: time.Second * 10}
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		log.Printf("Error: %v", err)
+		log.Printf("Error: %v\n", err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Error: %v", err)
+		log.Printf("Error: %v\n", err)
 	}
 
 	var m GroupMembers
@@ -154,59 +170,4 @@ func GetGroupMembers(graphToken azuretoken.GraphToken, gid string) {
 	for _, v := range m.Value {
 		fmt.Println(v.Mail)
 	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-type ListnerInfo struct {
-	Name        string
-	HostName    string
-	ServiceName string
-	Department  string
-	OpsTeam     string
-	Application string
-	Namespace   string
-	Cluster     string
-}
-
-func GetListnerInfo(clientset *kubernetes.Clientset) ([]ListnerInfo, error) {
-	// initiate ListnerInfo output objects
-	var listner ListnerInfo
-	var listners []ListnerInfo
-
-	// access the API to list ingress resources
-	ing, err := clientset.NetworkingV1beta1().Ingresses("").List(v1.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	for _, i := range ing.Items {
-		listner.Cluster = "cluster-name"
-
-		// access the API to get Namespace label resources
-		ns, err := clientset.CoreV1().Namespaces().Get(i.Namespace, v1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-		labels := ns.ObjectMeta.Labels
-		listner.Department = labels[os.Getenv("DEPARTMENTTAG")]
-		listner.Application = labels[os.Getenv("APPLICATIONTAG")]
-		listner.OpsTeam = labels[os.Getenv("OPSTAG")]
-
-		// access the API to get ingress resources
-		ir, err := clientset.NetworkingV1beta1().Ingresses(i.Namespace).Get(i.Name, v1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-
-		rules := ir.Spec.Rules
-		for _, r := range rules {
-			listner.Name = i.Name
-			listner.HostName = r.Host
-			listner.Namespace = i.Namespace
-			listners = append(listners, listner)
-		}
-	}
-
-	return listners, err
 }
