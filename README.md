@@ -32,10 +32,11 @@ echo "waiting for app to be ready for the role assignments"
 sleep 10
 
 ### Add SPN to the subscriptions as an reader
+`
 for s in "${subscriptions[@]}"; do {
     az role assignment create --assignee $applicationId --subscription $s --role 'Reader'
 }; done
-
+`
 
 # set env vars
 Once the Azure App registration is created set the following environment variables:
