@@ -17,7 +17,32 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-type GroupMembers struct {
+type AzGroup struct {
+	ID                           string        `json:"id"`
+	DeletedDateTime              interface{}   `json:"deletedDateTime"`
+	Classification               interface{}   `json:"classification"`
+	CreatedDateTime              time.Time     `json:"createdDateTime"`
+	CreationOptions              []interface{} `json:"creationOptions"`
+	Description                  string        `json:"description"`
+	DisplayName                  string        `json:"displayName"`
+	GroupTypes                   []string      `json:"groupTypes"`
+	Mail                         string        `json:"mail"`
+	MailEnabled                  bool          `json:"mailEnabled"`
+	MailNickname                 string        `json:"mailNickname"`
+	OnPremisesLastSyncDateTime   interface{}   `json:"onPremisesLastSyncDateTime"`
+	OnPremisesSecurityIdentifier interface{}   `json:"onPremisesSecurityIdentifier"`
+	OnPremisesSyncEnabled        interface{}   `json:"onPremisesSyncEnabled"`
+	PreferredDataLocation        string        `json:"preferredDataLocation"`
+	ProxyAddresses               []string      `json:"proxyAddresses"`
+	RenewedDateTime              time.Time     `json:"renewedDateTime"`
+	ResourceBehaviorOptions      []interface{} `json:"resourceBehaviorOptions"`
+	ResourceProvisioningOptions  []interface{} `json:"resourceProvisioningOptions"`
+	SecurityEnabled              bool          `json:"securityEnabled"`
+	Visibility                   string        `json:"visibility"`
+	OnPremisesProvisioningErrors []interface{} `json:"onPremisesProvisioningErrors"`
+}
+
+type AzGroupMembers struct {
 	OdataContext string `json:"@odata.context"`
 	Value        []struct {
 		OdataType         string        `json:"@odata.type"`
@@ -35,83 +60,84 @@ type GroupMembers struct {
 	} `json:"value"`
 }
 
-type Group struct {
+type K8sGroup struct {
 	GroupID   string
-	GroupName string
 	Namespace string
 }
 
 type Contacts struct {
 	Persons []string
-	Group   Group
+	Group   K8sGroup
 }
 
 type ListnerContactInfo struct {
-	HostName       string
-	ListnerName    string
-	ContactPersons []Contacts
-	Cluster        string
+	HostName    string
+	ListnerName string
+	GroupID     string
+	Namespace   string
 }
 
 type K8s struct{}
 type Azure struct{}
 
 func main() {
-
-	// initialize azure and kubernetes methods
-	var kube K8s
-	var az Azure
-
-	// load environment variables for Azure environment
+	// Check if there are empty ENV Variables that need to be set
+	CheckEmptyEnVar()
+	// load environment variables for Azure graph token request
 	applicationid := os.Getenv("AZAPPLICATIONID")
 	tenantid := os.Getenv("AZTENANT")
 	secret := os.Getenv("AZSECRET")
+
+	// initiate azure methods
+	var az Azure
 
 	// get azure graph token
 	var token azuretoken.Token
 	graphClient := azuretoken.GraphClient{TenantID: tenantid, ApplicationID: applicationid, ClientSecret: secret}
 	gtoken := token.GetGraphToken(graphClient)
 
-	// run the GetListnerInfo function to create ListnerInfo output object
-	groups, err := kube.GetGroup(kube.CreateClientSet())
+	contacts, err := GetAllContacts(gtoken)
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 	}
 
-	for _, g := range groups {
-		az.GetGroupMembers(gtoken, g.GroupID)
+	for _, c := range contacts {
+		for _, p := range c.Persons {
+			gname := az.GetGroup(gtoken, c.Group.GroupID)
+			fmt.Printf("name: %-27v ns: %-27v group: %v\n", p, c.Group.Namespace, gname.DisplayName)
+		}
+
 	}
 
 }
 
-func (k K8s) GetGroup(clientset *kubernetes.Clientset) ([]Group, error) {
-	rbenv := os.Getenv("ROLEBINDING")
-	var groups []Group
+func CheckEmptyEnVar() {
+	vars := []string{"AZAPPLICATIONID", "AZTENANT", "AZSECRET", "KUBECONFIG", "ROLEBINDING"}
+	for _, v := range vars {
+		if os.Getenv(v) == "" {
+			log.Fatalf("Fatal Error: env variable [ %v ] is empty\n", v)
+		}
+	}
+}
 
-	ns, err := clientset.CoreV1().Namespaces().List(v1.ListOptions{})
+func GetAllContacts(token azuretoken.GraphToken) ([]Contacts, error) {
+	// initialize azure and kubernetes methods
+	var kube K8s
+	var az Azure
+
+	var contacts []Contacts
+	groups, err := kube.GetGroup(kube.CreateClientSet())
 	if err != nil {
-		return nil, err
+		return contacts, err
 	}
 
-	for _, n := range ns.Items {
-		rb, err := clientset.RbacV1().RoleBindings(n.GetName()).List(v1.ListOptions{})
-		if err != nil {
-			return nil, err
-		}
-
-		for _, r := range rb.Items {
-			if r.GetName() == rbenv {
-				for _, sub := range r.Subjects {
-					if sub.APIGroup == "rbac.authorization.k8s.io" {
-						group := Group{GroupID: sub.Name, Namespace: sub.Namespace}
-						groups = append(groups, group)
-					}
-				}
-			}
-		}
-
+	for _, g := range groups {
+		m := az.GetGroupMembersMail(token, g.GroupID)
+		c := Contacts{Persons: m, Group: g}
+		contacts = append(contacts, c)
 	}
-	return groups, err
+
+	return contacts, err
 }
 
 func (K8s) CreateClientSet() *kubernetes.Clientset {
@@ -142,10 +168,38 @@ func (K8s) CreateClientSet() *kubernetes.Clientset {
 	return clientset
 }
 
-func (a Azure) GetGroup() {}
+func (k K8s) GetGroup(clientset *kubernetes.Clientset) ([]K8sGroup, error) {
+	rbenv := os.Getenv("ROLEBINDING")
+	var groups []K8sGroup
 
-func (a Azure) GetGroupMembers(graphToken azuretoken.GraphToken, gid string) {
-	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/groups/%v/members", gid)
+	ns, err := clientset.CoreV1().Namespaces().List(v1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, n := range ns.Items {
+		rb, err := clientset.RbacV1().RoleBindings(n.GetName()).List(v1.ListOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, r := range rb.Items {
+			if r.GetName() == rbenv {
+				for _, sub := range r.Subjects {
+					if sub.APIGroup == "rbac.authorization.k8s.io" {
+						group := K8sGroup{GroupID: sub.Name, Namespace: sub.Namespace}
+						groups = append(groups, group)
+					}
+				}
+			}
+		}
+
+	}
+	return groups, err
+}
+
+func (a Azure) GetGroup(graphToken azuretoken.GraphToken, gid string) AzGroup {
+	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/groups/%v", gid)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Printf("Error: %v\n", err)
@@ -164,10 +218,65 @@ func (a Azure) GetGroupMembers(graphToken azuretoken.GraphToken, gid string) {
 		log.Printf("Error: %v\n", err)
 	}
 
-	var m GroupMembers
+	var gn AzGroup
+	json.Unmarshal(body, &gn)
+
+	return gn
+}
+
+func (a Azure) GetGroupMembers(token azuretoken.GraphToken, gid string) AzGroupMembers {
+	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/groups/%v/members", gid)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("%s %s", token.TokenType, token.AccessToken))
+	req.Header.Add("Content-Type", "application/json")
+	httpClient := &http.Client{Timeout: time.Second * 10}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+	}
+
+	var m AzGroupMembers
 	json.Unmarshal(body, &m)
 
-	for _, v := range m.Value {
-		fmt.Println(v.Mail)
+	return m
+}
+
+func (a Azure) GetGroupMembersMail(token azuretoken.GraphToken, gid string) []string {
+	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/groups/%v/members", gid)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Printf("Error: %v\n", err)
 	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("%s %s", token.TokenType, token.AccessToken))
+	req.Header.Add("Content-Type", "application/json")
+	httpClient := &http.Client{Timeout: time.Second * 10}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+	}
+
+	var m AzGroupMembers
+	json.Unmarshal(body, &m)
+
+	var members []string
+	for _, v := range m.Value {
+		members = append(members, v.Mail)
+	}
+
+	return members
 }
