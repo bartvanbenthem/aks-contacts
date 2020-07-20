@@ -92,6 +92,7 @@ func main() {
 
 	// initiate azure methods
 	var az Azure
+	var kube K8s
 
 	// get azure graph token
 	var token azuretoken.Token
@@ -104,7 +105,7 @@ func main() {
 		log.Printf("Error: %v\n", err)
 	}
 
-	cluster := GetCurrentContext()
+	cluster := kube.GetCurrentContext()
 	fmt.Printf("%-27v %-27v %-35v %v\n", "contact", "namespace", "group", "context")
 	for _, c := range contacts {
 		for _, p := range c.Persons {
@@ -128,16 +129,6 @@ func CheckEmptyEnVar() {
 	}
 }
 
-func GetCurrentContext() string {
-	cmd := exec.Command("kubectl", "config", "current-context")
-	stdoutStderr, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error: %v\n", err)
-	}
-
-	return strings.TrimSuffix(string(stdoutStderr), "\n")
-}
-
 func GetAllContacts(token azuretoken.GraphToken) ([]Contacts, error) {
 	// initialize azure and kubernetes methods
 	var kube K8s
@@ -156,6 +147,16 @@ func GetAllContacts(token azuretoken.GraphToken) ([]Contacts, error) {
 	}
 
 	return contacts, err
+}
+
+func (K8s) GetCurrentContext() string {
+	cmd := exec.Command("kubectl", "config", "current-context")
+	stdoutStderr, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+	}
+
+	return strings.TrimSuffix(string(stdoutStderr), "\n")
 }
 
 func (K8s) CreateClientSet() *kubernetes.Clientset {
