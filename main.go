@@ -90,7 +90,7 @@ func main() {
 	tenantid := os.Getenv("AZTENANT")
 	secret := os.Getenv("AZSECRET")
 
-	// initiate azure methods
+	// initiate azure and k8s methods
 	var az Azure
 	var kube K8s
 
