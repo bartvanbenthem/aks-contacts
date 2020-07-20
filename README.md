@@ -53,11 +53,11 @@ for s in "${subscriptions[@]}"; do {
 ## set env vars
 Once the Azure App registration is created set the following environment variables:
 ``` shell
-export AZAPPLICATIONID='<spn-id>'
-export AZTENANT='<azure-tenant-id>'
-export AZSECRET='<spn-secret>'
+export AZAPPLICATIONID='$applicationId'
+export AZTENANT=$tenantId
+export AZSECRET='$applicationSecret'
 export KUBECONFIG='~/.kube/config'
-export ROLEBINDING='<name-of-rolebinding>'
+export ROLEBINDING='<<name-of-rolebinding-to-export>>'
 ```
 
 ## run binary
