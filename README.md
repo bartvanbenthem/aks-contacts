@@ -59,3 +59,9 @@ export AZSECRET='<spn-secret>'
 export KUBECONFIG='~/.kube/config'
 export ROLEBINDING='<name-of-rolebinding>'
 ```
+
+## run binary
+``` shell
+chmod 755 bin/aks2contact
+./bin/aks2contact
+```
