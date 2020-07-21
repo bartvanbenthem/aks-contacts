@@ -1,5 +1,5 @@
 # Description
-display all the contacts per namespace or listner on an RBAC enabled Azure Kubernetes cluster.
+display all the contacts per namespace or ingress hostname on an RBAC enabled Azure Kubernetes cluster.
 
 ## prerequisites
 Install azure cli: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
