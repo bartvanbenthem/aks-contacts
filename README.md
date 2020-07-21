@@ -3,6 +3,7 @@ display all the contacts per namespace or listner on an RBAC enabled Azure Kuber
 
 ## prerequisites
 Install azure cli: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
+
 Install kubectl: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 
 ## create azure spn
