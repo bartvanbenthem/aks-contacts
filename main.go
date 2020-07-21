@@ -68,15 +68,13 @@ type K8sGroup struct {
 }
 
 type Contacts struct {
-	Persons []string
 	Group   K8sGroup
+	Persons []string
 }
 
-type ListnerContactInfo struct {
-	HostName    string
-	ListnerName string
-	GroupID     string
-	Namespace   string
+type Ingress struct {
+	Group     K8sGroup
+	HostNames []string
 }
 
 type K8s struct{}
