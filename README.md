@@ -44,7 +44,7 @@ for s in "${subscriptions[@]}"; do {
 }; done
 ```
 
-## set env vars
+## set environment variables
 Once the Azure App registration is created set the following environment variables:
 ``` shell
 $ export AZAPPLICATIONID='$applicationId'
@@ -54,7 +54,7 @@ $ export KUBECONFIG='~/.kube/config' # give full path if ~ gives an error
 $ export ROLEBINDING='<<name-of-rolebinding-to-export>>'
 ```
 
-## run binary
+## install and run binary
 ``` shell
 $ git clone https://github.com/bartvanbenthem/aks2contact.git
 $ ./bin/aks2contact
