@@ -67,9 +67,10 @@ type K8sGroup struct {
 	Namespace string
 }
 
-type Contacts struct {
+type ContactGroup struct {
 	Group   K8sGroup
 	Persons []string
+	Owner   string
 }
 
 type Ingress struct {
@@ -127,12 +128,12 @@ func CheckEmptyEnVar() {
 	}
 }
 
-func GetAllContacts(token azuretoken.GraphToken) ([]Contacts, error) {
+func GetAllContacts(token azuretoken.GraphToken) ([]ContactGroup, error) {
 	// initialize azure and kubernetes methods
 	var kube K8s
 	var az Azure
 
-	var contacts []Contacts
+	var contacts []ContactGroup
 	groups, err := kube.GetGroup(kube.CreateClientSet())
 	if err != nil {
 		return contacts, err
@@ -140,7 +141,7 @@ func GetAllContacts(token azuretoken.GraphToken) ([]Contacts, error) {
 
 	for _, g := range groups {
 		m := az.GetGroupMembersMail(token, g.GroupID)
-		c := Contacts{Persons: m, Group: g}
+		c := ContactGroup{Persons: m, Group: g}
 		contacts = append(contacts, c)
 	}
 
