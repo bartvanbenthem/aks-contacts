@@ -92,11 +92,11 @@ func main() {
 }
 
 func CheckEmptyEnVar() {
-	vars := []string{"AZAPPLICATIONID",
-		"AZTENANT",
-		"AZSECRET",
-		"KUBECONFIG",
-		"ROLEBINDING"}
+	vars := []string{"AZURE_CLIENT_ID",
+		"AZURE_TENANT_ID",
+		"AZURE_CLIENT_SECRET",
+		"K8S_KUBECONFIG",
+		"K8S_ROLEBINDING"}
 
 	for _, v := range vars {
 		if os.Getenv(v) == "" {
@@ -144,7 +144,7 @@ func (K8s) CreateClientSet() *kubernetes.Clientset {
 	if err != nil {
 		// fallback to kubeconfig
 		kubeconfig := filepath.Join("~", ".kube", "config")
-		if envvar := os.Getenv("KUBECONFIG"); len(envvar) > 0 {
+		if envvar := os.Getenv("K8S_KUBECONFIG"); len(envvar) > 0 {
 			kubeconfig = envvar
 		}
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
@@ -164,7 +164,7 @@ func (K8s) CreateClientSet() *kubernetes.Clientset {
 }
 
 func (k K8s) GetGroup(clientset *kubernetes.Clientset) ([]K8sGroup, error) {
-	rbenv := os.Getenv("ROLEBINDING")
+	rbenv := os.Getenv("K8S_ROLEBINDING")
 	var groups []K8sGroup
 
 	ns, err := clientset.CoreV1().Namespaces().List(v1.ListOptions{})
@@ -322,9 +322,9 @@ func PrintHostnames() {
 
 func PrintContacts() {
 	// load environment variables for Azure graph token request
-	applicationid := os.Getenv("AZAPPLICATIONID")
-	tenantid := os.Getenv("AZTENANT")
-	secret := os.Getenv("AZSECRET")
+	applicationid := os.Getenv("AZURE_CLIENT_ID")
+	tenantid := os.Getenv("AZURE_TENANT_ID")
+	secret := os.Getenv("AZURE_CLIENT_SECRET")
 
 	// get azure graph token
 	var token azuretoken.Token
