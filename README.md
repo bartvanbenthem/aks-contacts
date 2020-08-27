@@ -1,5 +1,5 @@
 # Description
-display all the contacts and/or hostnames per namespace on an RBAC enabled Azure Kubernetes cluster.
+Display all the contacts and/or hostnames per namespace on an RBAC enabled Azure Kubernetes cluster.
 
 ## prerequisites
 Install azure cli: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
@@ -61,6 +61,6 @@ $ export K8S_ROLEBINDING='<<name-of-rolebinding-to-export>>'
 
 ## install and run binary
 ``` shell
-$ git clone https://github.com/bartvanbenthem/aks2contact.git
-$ ./bin/aks2contact
+$ git clone https://github.com/bartvanbenthem/aks-contacts.git
+$ ./bin/aks-contacts
 ```
