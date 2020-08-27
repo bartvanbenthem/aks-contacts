@@ -1,4 +1,4 @@
-module github.com/bartvanbenthem/aks2contact
+module github.com/bartvanbenthem/aks-contacts
 
 go 1.13
 
