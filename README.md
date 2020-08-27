@@ -51,11 +51,12 @@ for s in "${subscriptions[@]}"; do {
 ## set environment variables
 Once the Azure App registration is created set the following environment variables:
 ``` shell
-$ export AZAPPLICATIONID='$applicationId'
-$ export AZTENANT=$tenantId
-$ export AZSECRET='$applicationSecret'
-$ export KUBECONFIG='~/.kube/config' # give full path if ~ gives an error
-$ export ROLEBINDING='<<name-of-rolebinding-to-export>>'
+
+$ export AZURE_CLIENT_ID='$applicationId'
+$ export AZURE_TENANT_ID=$tenantId
+$ export AZURE_CLIENT_SECRET='$applicationSecret'
+$ export K8S_KUBECONFIG='~/.kube/config' # give full path if ~ gives an error
+$ export K8S_ROLEBINDING='<<name-of-rolebinding-to-export>>'
 ```
 
 ## install and run binary
