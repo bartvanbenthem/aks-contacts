@@ -1,5 +1,5 @@
 # Description
-Display all the contacts per namespace or hostname on an RBAC enabled Azure Kubernetes cluster.
+Display all the contacts per namespace or hostname on an RBAC enabled Azure Kubernetes cluster. The Azure graph API is used directly to query Azure contacts (no Azure Go SDK is used) 
 
 ## prerequisites
 Install azure cli: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
