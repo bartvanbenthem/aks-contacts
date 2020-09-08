@@ -67,12 +67,6 @@ type K8sGroup struct {
 	Namespace string
 }
 
-type Host struct {
-	Group     K8sGroup
-	HostName  string
-	Namespace string
-}
-
 type ContactGroup struct {
 	Group   K8sGroup
 	Persons []string
@@ -86,8 +80,7 @@ func main() {
 	// Check if there are empty ENV Variables that need to be set
 	CheckEmptyEnVar()
 
-	// test hostname and contact output
-	PrintHostnames()
+	// test contact output
 	PrintContacts()
 }
 
@@ -193,34 +186,6 @@ func (k K8s) GetGroup(clientset *kubernetes.Clientset) ([]K8sGroup, error) {
 	return groups, err
 }
 
-func (k K8s) GetHostname(clientset *kubernetes.Clientset) ([]Host, error) {
-	var hosts []Host
-
-	ns, err := clientset.CoreV1().Namespaces().List(v1.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	for _, n := range ns.Items {
-		ing, err := clientset.NetworkingV1beta1().Ingresses(n.GetName()).List(v1.ListOptions{})
-		if err != nil {
-			return nil, err
-		}
-
-		var host Host
-		for _, i := range ing.Items {
-			rules := i.Spec.Rules
-			for _, r := range rules {
-				host.HostName = r.Host
-				host.Namespace = n.GetName()
-				hosts = append(hosts, host)
-			}
-		}
-	}
-
-	return hosts, err
-}
-
 func (a Azure) GetGroup(graphToken azuretoken.GraphToken, gid string) AzGroup {
 	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/groups/%v", gid)
 	req, err := http.NewRequest("GET", url, nil)
@@ -304,22 +269,6 @@ func (a Azure) GetGroupMembersMail(token azuretoken.GraphToken, gid string) []st
 	return members
 }
 
-func PrintHostnames() {
-	var kube K8s
-	// Create the hostname output
-	hosts, err := kube.GetHostname(kube.CreateClientSet())
-	if err != nil {
-		log.Printf("Error: %v\n", err)
-	}
-	fmt.Printf("%-27v %-27v %v\n", "hostname", "namespace", "context")
-	for _, h := range hosts {
-		cluster := kube.GetCurrentContext()
-		fmt.Printf("%-27v %-27v %v\n", h.HostName, h.Namespace, cluster)
-	}
-
-	fmt.Println()
-}
-
 func PrintContacts() {
 	// load environment variables for Azure graph token request
 	applicationid := os.Getenv("AZURE_CLIENT_ID")
@@ -342,11 +291,11 @@ func PrintContacts() {
 	}
 
 	cluster := kube.GetCurrentContext()
-	fmt.Printf("%-27v %-27v %-35v %v\n", "contact", "namespace", "group", "context")
+	fmt.Printf("%-35v %-27v %-35v %v\n", "contact", "namespace", "group", "context")
 	for _, c := range contacts {
 		for _, p := range c.Persons {
 			gname := az.GetGroup(gtoken, c.Group.GroupID)
-			fmt.Printf("%-27v %-27v %-35v %v\n", p, c.Group.Namespace, gname.DisplayName, cluster)
+			fmt.Printf("%-35v %-27v %-35v %v\n", p, c.Group.Namespace, gname.DisplayName, cluster)
 		}
 	}
 }
