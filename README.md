@@ -59,8 +59,9 @@ $ export K8S_KUBECONFIG='~/.kube/config' # give full path if ~ gives an error
 $ export K8S_ROLEBINDING='<<name-of-rolebinding-to-export>>'
 ```
 
-## install and run binary
+## install and run
 ``` shell
 $ git clone https://github.com/bartvanbenthem/aks-contacts.git
-$ ./bin/aks-contacts
+$ cd aks-contacts/bin/
+$ ./aks-contacts
 ```
