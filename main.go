@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/bartvanbenthem/azuretoken"
@@ -291,11 +292,15 @@ func PrintContacts() {
 	}
 
 	cluster := kube.GetCurrentContext()
-	fmt.Printf("%-35v %-27v %-35v %v\n", "contact", "namespace", "group", "context")
+	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+	fmt.Fprintln(writer, "Contact\tNamespace\tGroup\tContext\t")
+	fmt.Fprintln(writer, "-------\t---------\t-----\t-------\t")
+
 	for _, c := range contacts {
 		for _, p := range c.Persons {
 			gname := az.GetGroup(gtoken, c.Group.GroupID)
-			fmt.Printf("%-35v %-27v %-35v %v\n", p, c.Group.Namespace, gname.DisplayName, cluster)
+			fmt.Fprintln(writer, fmt.Sprintf("%v\t%v\t%v\t%v\t", p, c.Group.Namespace, gname.DisplayName, cluster))
 		}
 	}
+	writer.Flush()
 }
