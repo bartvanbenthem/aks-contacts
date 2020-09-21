@@ -119,7 +119,7 @@ func GetAllContacts(token azuretoken.GraphToken) ([]ContactGroup, error) {
 	return contacts, err
 }
 
-func (K8s) GetCurrentContext() string {
+func (k *K8s) GetCurrentContext() string {
 	cmd := exec.Command("kubectl", "config", "current-context")
 	stdoutStderr, err := cmd.CombinedOutput()
 	if err != nil {
@@ -129,7 +129,7 @@ func (K8s) GetCurrentContext() string {
 	return strings.TrimSuffix(string(stdoutStderr), "\n")
 }
 
-func (K8s) CreateClientSet() *kubernetes.Clientset {
+func (k *K8s) CreateClientSet() *kubernetes.Clientset {
 	// When running the binary inside of a pod in a cluster,
 	// the kubelet will automatically mount a service account into the container at:
 	// /var/run/secrets/kubernetes.io/serviceaccount.
@@ -157,7 +157,7 @@ func (K8s) CreateClientSet() *kubernetes.Clientset {
 	return clientset
 }
 
-func (k K8s) GetGroup(clientset *kubernetes.Clientset) ([]K8sGroup, error) {
+func (k *K8s) GetGroup(clientset *kubernetes.Clientset) ([]K8sGroup, error) {
 	rbenv := os.Getenv("K8S_ROLEBINDING")
 	var groups []K8sGroup
 
@@ -187,7 +187,7 @@ func (k K8s) GetGroup(clientset *kubernetes.Clientset) ([]K8sGroup, error) {
 	return groups, err
 }
 
-func (a Azure) GetGroup(graphToken azuretoken.GraphToken, gid string) AzGroup {
+func (a *Azure) GetGroup(graphToken azuretoken.GraphToken, gid string) AzGroup {
 	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/groups/%v", gid)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -213,7 +213,7 @@ func (a Azure) GetGroup(graphToken azuretoken.GraphToken, gid string) AzGroup {
 	return gn
 }
 
-func (a Azure) GetGroupMembers(token azuretoken.GraphToken, gid string) AzGroupMembers {
+func (a *Azure) GetGroupMembers(token azuretoken.GraphToken, gid string) AzGroupMembers {
 	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/groups/%v/members", gid)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -239,7 +239,7 @@ func (a Azure) GetGroupMembers(token azuretoken.GraphToken, gid string) AzGroupM
 	return m
 }
 
-func (a Azure) GetGroupMembersMail(token azuretoken.GraphToken, gid string) []string {
+func (a *Azure) GetGroupMembersMail(token azuretoken.GraphToken, gid string) []string {
 	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/groups/%v/members", gid)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
