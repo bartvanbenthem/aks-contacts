@@ -59,7 +59,7 @@ $ export AZURE_CLIENT_SECRET='$applicationSecret'
 ## install (Linux)
 ``` shell
 $ git clone https://github.com/bartvanbenthem/aks-contacts.git
-$ cp aks-contacts/bin/aks-contacts /usr/bin
+$ sudo cp aks-contacts/bin/aks-contacts /usr/bin
 ```
 
 ## run
