@@ -48,7 +48,7 @@ for s in "${subscriptions[@]}"; do {
 }; done
 ```
 
-## set environment variables
+## set environment variables for auth
 Once the Azure App registration is created set the following environment variables:
 ``` shell
 
@@ -56,12 +56,15 @@ $ export AZURE_CLIENT_ID='$applicationId'
 $ export AZURE_TENANT_ID=$tenantId
 $ export AZURE_CLIENT_SECRET='$applicationSecret'
 ```
+## install (Linux)
+``` shell
+$ git clone https://github.com/bartvanbenthem/aks-contacts.git
+$ cp aks-contacts/bin/aks-contacts /usr/bin
+```
 
-## install and run
+## run
 ``` shell
 $ export K8S_KUBECONFIG='~/.kube/config' # give full path if ~ gives an error
 $ export K8S_ROLEBINDING='<<name-of-rolebinding-to-export>>'
-$ git clone https://github.com/bartvanbenthem/aks-contacts.git
-$ cd aks-contacts/bin/
-$ ./aks-contacts
+$ aks-contacts
 ```
