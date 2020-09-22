@@ -55,12 +55,12 @@ Once the Azure App registration is created set the following environment variabl
 $ export AZURE_CLIENT_ID='$applicationId'
 $ export AZURE_TENANT_ID=$tenantId
 $ export AZURE_CLIENT_SECRET='$applicationSecret'
-$ export K8S_KUBECONFIG='~/.kube/config' # give full path if ~ gives an error
-$ export K8S_ROLEBINDING='<<name-of-rolebinding-to-export>>'
 ```
 
 ## install and run
 ``` shell
+$ export K8S_KUBECONFIG='~/.kube/config' # give full path if ~ gives an error
+$ export K8S_ROLEBINDING='<<name-of-rolebinding-to-export>>'
 $ git clone https://github.com/bartvanbenthem/aks-contacts.git
 $ cd aks-contacts/bin/
 $ ./aks-contacts
