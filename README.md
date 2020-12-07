@@ -56,7 +56,7 @@ $ export AZURE_CLIENT_ID='$applicationId'
 $ export AZURE_TENANT_ID=$tenantId
 $ export AZURE_CLIENT_SECRET='$applicationSecret'
 ```
-## install (Linux or WSL2)
+## install (Linux or WSL)
 For Windows first configure: https://docs.microsoft.com/en-us/windows/wsl/install-win10
 ``` shell
 $ git clone https://github.com/bartvanbenthem/aks-contacts.git
